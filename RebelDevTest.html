@@ -1,0 +1,169 @@
+<style>
+.selected {
+  background-color: #41a3f4;
+}
+</style>
+<!DOCTYPE HTML>
+<html>
+<head>  
+      <title> Rebel development application test </title>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.0.7/angular.min.js"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+		 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="https://cdn.rawgit.com/AlphaGit/ng-pattern-restrict/master/src/ng-pattern-restrict.min.js"></script>
+
+</head>
+<body>
+	<div ng-app = "mainApp" ng-controller = "AppController" align="center">
+        <div></div>
+        <div style="margin-left:90px;">
+            <table>
+                <tr style="height:35px;margin-bottom:10px;">
+                    <tr>
+					    <td style="background-color:#41a3f4"><span style="margin-left:5px;color:white;background-color:#41a3f4;width:250px;">Enter the Key and Value</span>
+                        </td>
+                        <td></td>
+                        <td style="background-color:#41a3f4"><span style="margin-left:5px;color:white;background-color:#41a3f4;width:250px;">Your List</span>
+                        </td>
+                        <tr>
+                            <tr>
+                                <td style= "border:1px solid black">
+                                    <div >
+                                    <input style="width:290px;height:240px;max-height:100%" type = "text"  ng-model = "inputField" ng-click ="init(user)" pattern="^[A-Za-z0-9]+$" ng-pattern-restrict/>  
+							        </div>
+                                </td>
+                                <td style="height:240px">
+                                    <div>
+                                        <input style="width: 140px;" id="addButton" type="button" value="Add" ng-click="addButton()" />
+										    <br/><br/>
+                                         <input style="width: 140px;" id="deleteButton" type="button" value="Remove Selected" ng-click="deleteButton()" />
+                                        <br/><br/>
+                                        <input style="width: 140px;" id="clearButton" type="button" value="Clear" ng-click="clearButton()" />
+										<br/><br/>
+                                        <input style="width: 140px;" id="exportButton" type="button" value="Export to JSON" ng-click="downLoadExcel(exportToXML)" />
+										<br/><br/>
+                                        <input style="width: 140px;" id="sortByName" type="button" value="Sort by Name" ng-click="sortByName()" />
+										<br/><br/>
+                                        <input style="width: 140px;" id="sortByValue" type="button" value="Sort by Value" ng-click="sortByValue()" />
+                                    </div>
+                                </td>
+                                <td style= "border:1px solid black">
+                                     <div style="width:290px;min-height:240px;max-height:100%;border:1px solid black;">
+                                       <table class="table" ng-show=showkeytable>                       
+                                          <tr ng-repeat="row in myList | orderBy:'Key'"  ng-click="setSelected(row.Key)" ng-class="{selected : row.Key ==idSelectedVote}">
+								             <td style="">{{row.Key}}={{row.Value}}</td>
+                                           </tr> 
+			                           </table>
+						              <table class="table" ng-show=showvaluetable>                       
+                                         <tr ng-repeat="row in myList | orderBy:'Value'"  ng-click="setSelected(row.Key)" ng-class="{selected : row.Key ==idSelectedVote}">
+											<td>{{row.Key}}={{row.Value}}</td>
+                                         </tr> 
+			                          </table>
+					               </div>
+					               <div style="width:290px;height:240px;border:1px solid black;" ng-show="false" id="exportToXML">
+					                   <table>                       
+                                         <tr ng-repeat="row in myList">
+								           <td><key>{{row.Key}}</key><value>{{row.Value}}</value></td>
+                                         </tr>                       
+                                       </table>
+								  </div>
+                                </td>
+                             </tr>
+					    </tr>
+					</tr>
+		        </tr>
+            </table>
+        </div>
+    </div>
+	      <script>
+         var mainApp = angular.module("mainApp", ['ngStorage']);
+
+         mainApp.controller('AppController', function($scope,$localStorage) {
+
+	  	   $scope.myList =[];
+		   $scope.showkeytable = true;
+		   $scope.showvaluetable = false;
+		   
+		   
+		   $scope.init = function (user) {
+           $scope.idSelectedVote = null;
+              };
+		   //#############....add....###############
+		   var format = /[!@#$%^&*()_+\-\[\]{};':"\\|,.<>\/?]+/;
+     $scope.addButton = function () {
+		 if($scope.inputField == undefined)
+		  {
+		  	alert("Input field cannot be empty.")
+		  }
+		  var splitstring = $scope.inputField.split('=');
+		  if(splitstring[0]=='' || splitstring[1]=='')
+	      {
+	    	 alert("Please Enter Text in <key>=<value> format only")
+	      }	 
+	      else if ( !$scope.inputField.includes('=') )
+		  {
+		  alert("Please Enter Text in <key>=<value> format only")
+		  }     
+		  else if(format.test($scope.inputField) )
+		  {
+		  	alert("Please Enter Alphanumeric values only.")
+		  }
+	  	  else{
+		  localStorage.setItem(splitstring[0],splitstring[1]);
+		  location.reload();
+	  	}
+      };
+	  
+     //#############....iterate localStorage...###############
+     for (var i = 0; i < localStorage.length; i++) 
+     {
+     	var key = localStorage.key(i);
+     	var value = localStorage.getItem(key); 
+        	$scope.myList.push({"Key":key,"Value":value});
+     }
+			 
+    //#############....remove all...###############
+    $scope.clearButton = function () 
+    {
+      localStorage.clear();
+	  location.reload();
+    };
+   //#############....remove selected row..###############
+	   $scope.idSelectedVote = null;
+       $scope.setSelected = function(idSelectedVote) 
+       {
+       		$scope.idSelectedVote = idSelectedVote;
+       }
+		$scope.deleteButton = function() 
+		{
+			localStorage.removeItem($scope.idSelectedVote);
+			location.reload(); 
+		}
+	  //#############....export to excel...###############
+	  $scope.downLoadExcel=function()
+      {
+	       var blob = new Blob([document.getElementById('exportToXML').innerHTML], {
+	           type: "application/xml"
+	       });
+	 
+	      saveAs(blob, 'MyList'+".xml");
+  	 }
+	 //#############....Sort By Key...###############
+	$scope.sortByName = function() {
+	   $scope.showkeytable = true;
+       $scope.showvaluetable = false;
+	}
+	 //#############....Sort By Value...###############
+	$scope.sortByValue = function() 
+	{
+    	$scope.showkeytable = false;
+    	$scope.showvaluetable = true;
+	}
+    });
+
+      </script>
+</body>
+</html>
